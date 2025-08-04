@@ -1,6 +1,5 @@
 package com.adithya.trackfolio.security;
 
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -37,7 +36,7 @@ public class JwtUtil {
     /**
      * Generates JWT
      *
-     * @param email : to encode in token
+     * @param email          : to encode in token
      * @param isRefreshToken : true for refresh token(valid 7 days) and false for access token(valid 1 hour)
      * @return signed JWT
      */
@@ -51,5 +50,25 @@ public class JwtUtil {
                 .setExpiration(new Date(now + expiry))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
+    }
+
+    /**
+     * Extract email(subject) from JWT
+     *
+     * @param token : refresh token
+     * @return : extracted email embedded in token's subject
+     */
+    public String extractEmail(String token) {
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody()
+                    .getSubject();
+        } catch (JwtException | IllegalArgumentException e) {
+            log.warn("Failed to extract email from token: {}", e.getMessage());
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token. Please login again");
+        }
     }
 }

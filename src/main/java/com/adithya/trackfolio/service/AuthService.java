@@ -1,5 +1,6 @@
 package com.adithya.trackfolio.service;
 
+import com.adithya.trackfolio.dto.AuthRequest;
 import com.adithya.trackfolio.dto.AuthResponse;
 import com.adithya.trackfolio.dto.RegisterRequest;
 import com.adithya.trackfolio.entity.User;
@@ -12,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 /**
@@ -70,4 +72,37 @@ public class AuthService {
         return new AuthResponse(accessToken, refreshToken);
     }
 
+    /**
+     * Handles user login
+     *
+     * @param request (login data)
+     * @return access and refresh tokens
+     */
+    public AuthResponse login(AuthRequest request) {
+
+        //check if user exist
+        Optional<User> optionalUser = repo.findByEmail(request.getEmail());
+
+        if (optionalUser.isEmpty()) {
+            log.warn("Login failed: No user found with email {}", request.getEmail());
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No user found");
+        }
+
+        User user = optionalUser.get();
+
+        //validate password
+        if (!encoder.matches(request.getPassword(), user.getPassword())) {
+            log.warn("Invalid password");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid password");
+        }
+
+        String accessToken = jwtUtil.generateToken(user.getEmail(), false);
+        String refreshToken = jwtUtil.generateToken(user.getEmail(), true);
+
+        user.setRefreshToken(refreshToken);
+        repo.save(user);
+        log.info("User email : {} logged in. Tokens returned.", user.getEmail());
+
+        return new AuthResponse(accessToken, refreshToken);
+    }
 }
