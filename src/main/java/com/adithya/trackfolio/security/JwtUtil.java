@@ -1,5 +1,6 @@
 package com.adithya.trackfolio.security;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -85,5 +86,23 @@ public class JwtUtil {
         } catch (JwtException e) {
             return false;
         }
+    }
+
+    /**
+     * Extracts email (subject) from token. Throws JwtException if invalid/expired.
+     */
+    public String tryExtractEmail(String token) throws JwtException {
+        return extractAllClaims(token).getSubject(); // throws raw JwtException
+    }
+
+    /**
+     * Parses token and returns all claims. Caller must handle JwtException.
+     */
+    private Claims extractAllClaims(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(key) // `secretKey` must be your configured key
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
     }
 }
