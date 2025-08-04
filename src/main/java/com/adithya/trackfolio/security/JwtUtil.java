@@ -71,4 +71,19 @@ public class JwtUtil {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token. Please login again");
         }
     }
+
+    /**
+     * Validate refresh token
+     *
+     * @param token : refresh token
+     * @return : true if valid , false if invalid
+     */
+    public boolean validateToken(String token) {
+        try {
+            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+            return true;
+        } catch (JwtException e) {
+            return false;
+        }
+    }
 }

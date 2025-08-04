@@ -3,6 +3,7 @@ package com.adithya.trackfolio.controller;
 import com.adithya.trackfolio.dto.AuthRequest;
 import com.adithya.trackfolio.dto.AuthResponse;
 import com.adithya.trackfolio.dto.RegisterRequest;
+import com.adithya.trackfolio.dto.TokenRequest;
 import com.adithya.trackfolio.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,5 +32,9 @@ public class AuthController {
     public AuthResponse login(@RequestBody AuthRequest request) {
         return service.login(request);
     }
-}
 
+    @PostMapping("/new-access-token")
+    public AuthResponse newAccessToken(@RequestBody TokenRequest request) {
+        return service.generateAccessToken(request.getRefreshToken());
+    }
+}

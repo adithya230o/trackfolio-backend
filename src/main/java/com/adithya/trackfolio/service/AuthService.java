@@ -105,4 +105,36 @@ public class AuthService {
 
         return new AuthResponse(accessToken, refreshToken);
     }
+
+    /**
+     * Handles regeneration of access token
+     *
+     * @param refreshToken : refresh token
+     * @return new access token
+     */
+    public AuthResponse generateAccessToken(String refreshToken) {
+
+        String email = jwtUtil.extractEmail(refreshToken); // throws on failure
+
+        User user = repo.findByEmail(email)
+                .orElseThrow(() -> {
+                    log.warn("User not found for extracted email address : {}", email);
+                    return new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token. Please login again");
+                });
+
+        if (!jwtUtil.validateToken(refreshToken)) {
+            log.warn("Token validation failed");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Session expired. Please login again");
+        }
+
+        if (!refreshToken.equals(user.getRefreshToken())) {
+            log.warn("Submitted token doesnt match with user's token");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token. Please login again");
+        }
+
+        String newAccessToken = jwtUtil.generateToken(user.getEmail(), false);
+        log.info("New accessToken generated and returned");
+
+        return new AuthResponse(newAccessToken, refreshToken);
+    }
 }
