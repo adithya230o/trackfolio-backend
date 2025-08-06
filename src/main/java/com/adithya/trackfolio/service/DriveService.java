@@ -12,6 +12,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+
 /**
  * Handles the service logic for dDriveSummary operations such as creation, update, and deletion.
  */
@@ -142,5 +146,21 @@ public class DriveService {
                 .driveDatetime(d.getDriveDatetime())
                 .isOnCampus(d.isOnCampus())
                 .build();
+    }
+
+    /**
+     * Fetches the details of all the drives on a given date
+     *
+     * @param date : date for which the drives have to be fetched
+     * @return : A list of DTOs containing drive details. Return empty list if there are no drives on that date
+     */
+    public List<DriveResponseDTO> getDrivesForDate(LocalDate date) {
+        Long userId = getUserIdFromContext();
+        LocalDateTime start = date.atStartOfDay();
+        LocalDateTime end = date.plusDays(1).atStartOfDay();
+
+        return driveRepo.findByUserIdAndDriveDatetimeBetween(userId, start, end).stream()
+                .map(this::toDto)
+                .toList();
     }
 }

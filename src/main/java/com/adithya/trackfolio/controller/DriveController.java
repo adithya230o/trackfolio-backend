@@ -5,8 +5,12 @@ import com.adithya.trackfolio.dto.DriveResponseDTO;
 import com.adithya.trackfolio.service.DriveService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
+import java.util.List;
 
 /**
  * Handles endpoints for operations on drive summaries
@@ -33,5 +37,10 @@ public class DriveController {
     @GetMapping("/fetch/{id}")
     public DriveResponseDTO getDrive(@PathVariable Long id) {
         return service.getDriveById(id);
+    }
+
+    @GetMapping("/date")
+    public List<DriveResponseDTO> getDrivesByDate(@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        return service.getDrivesForDate(date);
     }
 }
