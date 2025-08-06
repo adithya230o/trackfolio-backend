@@ -163,4 +163,29 @@ public class DriveService {
                 .map(this::toDto)
                 .toList();
     }
+
+    /**
+     * Fetches all drives for the current user based on the specified type.
+     *
+     * @param type : "completed" to fetch drives that have already occurred,
+     *             "upcoming" to fetch drives scheduled for future dates.
+     * @return : A list of DTOs containing drive details.
+     * @throws ResponseStatusException if the type is invalid.
+     */
+    public List<DriveResponseDTO> getDrivesByType(String type) {
+        Long userId = getUserIdFromContext();
+        LocalDateTime now = LocalDateTime.now();
+        List<DriveSummary> drives;
+
+        switch (type.toLowerCase()) {
+            case "upcoming" -> drives = driveRepo.findByUserIdAndDriveDatetimeAfter(userId, now);
+            case "completed" -> drives = driveRepo.findByUserIdAndDriveDatetimeBefore(userId, now);
+            default -> {
+                log.warn("Invalid drive type '{}' requested by user {}", type, userId);
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Type must be 'upcoming' or 'past'");
+            }
+        }
+
+        return drives.stream().map(this::toDto).toList();
+    }
 }

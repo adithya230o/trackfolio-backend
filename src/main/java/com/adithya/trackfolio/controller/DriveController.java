@@ -43,4 +43,9 @@ public class DriveController {
     public List<DriveResponseDTO> getDrivesByDate(@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         return service.getDrivesForDate(date);
     }
+
+    @GetMapping("/type")
+    public List<DriveResponseDTO> getDrivesByType(@RequestParam("type") String value) {
+        return service.getDrivesByType(value);
+    }
 }
