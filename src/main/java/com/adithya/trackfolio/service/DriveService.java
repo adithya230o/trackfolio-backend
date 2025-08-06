@@ -1,6 +1,7 @@
 package com.adithya.trackfolio.service;
 
 import com.adithya.trackfolio.dto.DriveRequestDTO;
+import com.adithya.trackfolio.dto.DriveResponseDTO;
 import com.adithya.trackfolio.entity.DriveSummary;
 import com.adithya.trackfolio.repository.DriveRepository;
 import com.adithya.trackfolio.repository.UserRepository;
@@ -42,14 +43,22 @@ public class DriveService {
      * @param dto : Drive details
      */
     public void saveDrive(DriveRequestDTO dto) {
-        
+
         Long userId = getUserIdFromContext();
 
+        //update drive details
         if (dto.getIsUpdate() != null && dto.getIsUpdate()) {
-            DriveSummary existing = driveRepo.findById(dto.getDriveId())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Drive not found"));
 
+            // check if drive exists
+            DriveSummary existing = driveRepo.findById(dto.getDriveId())
+                    .orElseThrow(() -> {
+                        log.warn("Drive not found for (Save drive)");
+                        return new ResponseStatusException(HttpStatus.NOT_FOUND, "Drive not found");
+                    });
+
+            // validate that the drive belongs to the current user
             if (!existing.getUserId().equals(userId)) {
+                log.warn("Drive doesnt belong to the user for (Save drive)");
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Unauthorized to update this drive");
             }
 
@@ -59,8 +68,9 @@ public class DriveService {
             existing.setOnCampus(dto.getIsOnCampus());
 
             driveRepo.save(existing);
+            log.info("Drive saved successfully");
         } else {
-            log.info("called next method");
+            log.info("Creating a new drive...");
             DriveSummary newDrive = DriveSummary.builder()
                     .userId(userId)
                     .companyName(dto.getCompanyName())
@@ -70,27 +80,67 @@ public class DriveService {
                     .build();
 
             driveRepo.save(newDrive);
+            log.info("New Drive created successfully");
         }
     }
 
     /**
-     * Deletes the drive summary
+     * Deletes a drive belonging to the authenticated user.
      *
-     * @param driveId : the ID of the drive to be deleted
+     * @param driveId ID of the drive to delete
+     * @throws ResponseStatusException if drive is not found or unauthorized
      */
     public void deleteDriveById(Long driveId) {
         Long userId = getUserIdFromContext();  // Extracted from email in SecurityContext
 
-        // 1. Check if drive exists
+        // check if drive exists
         DriveSummary drive = driveRepo.findById(driveId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Drive not found"));
+                .orElseThrow(() -> {
+                    log.warn("Drive not found for (Delete drive)");
+                    return new ResponseStatusException(HttpStatus.NOT_FOUND, "Drive not found");
+                });
 
-        // 2. Validate that the drive belongs to the current user
+        // validate that the drive belongs to the current user
         if (!drive.getUserId().equals(userId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not authorized to delete this drive");
+            log.warn("Drive doesnt belong to the user for (Delete drive)");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Unauthorized to delete this drive");
         }
 
-        // 3. Delete the drive
         driveRepo.deleteById(driveId);
+    }
+
+    /**
+     * Fetches a drive's details for the authenticated user.
+     *
+     * @param id ID of the drive to fetch
+     * @return DTO containing drive details
+     * @throws ResponseStatusException if drive is not found or unauthorized
+     */
+    public DriveResponseDTO getDriveById(Long id) {
+        Long userId = getUserIdFromContext();
+
+        DriveSummary drive = driveRepo.findById(id)
+                .orElseThrow(() -> {
+                    log.warn("Drive not found for (get drive by Id)");
+                    return new ResponseStatusException(HttpStatus.NOT_FOUND, "Drive not found");
+                });
+
+        if (!drive.getUserId().equals(userId)) {
+            log.warn("Drive doesnt belong to the user for (get drive by Id)");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Unauthorized to view this drive");
+        }
+
+        return toDto(drive);
+    }
+
+    // Converts DriveSummary entity to response DTO
+    private DriveResponseDTO toDto(DriveSummary d) {
+        return DriveResponseDTO.builder()
+                .id(d.getId())
+                .companyName(d.getCompanyName())
+                .role(d.getRole())
+                .driveDatetime(d.getDriveDatetime())
+                .isOnCampus(d.isOnCampus())
+                .build();
     }
 }

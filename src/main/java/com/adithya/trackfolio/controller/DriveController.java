@@ -1,6 +1,7 @@
 package com.adithya.trackfolio.controller;
 
 import com.adithya.trackfolio.dto.DriveRequestDTO;
+import com.adithya.trackfolio.dto.DriveResponseDTO;
 import com.adithya.trackfolio.service.DriveService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,13 +21,17 @@ public class DriveController {
 
     @PostMapping("/save")
     public void saveDrive(@RequestBody DriveRequestDTO dto) {
-        log.info("called save");
         service.saveDrive(dto);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("delete/{id}")
     public ResponseEntity<String> deleteDrive(@PathVariable Long id) {
         service.deleteDriveById(id);
         return ResponseEntity.ok("Drive deleted successfully");
+    }
+
+    @GetMapping("/fetch/{id}")
+    public DriveResponseDTO getDrive(@PathVariable Long id) {
+        return service.getDriveById(id);
     }
 }
