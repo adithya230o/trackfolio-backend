@@ -14,6 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -168,6 +169,7 @@ public class DriveService {
      * Fetches all drives for the current user based on the specified type.
      *
      * @param type : "completed" to fetch drives that have already occurred,
+     *             "nextup" to fet drives scheduled for today and tomorrow
      *             "upcoming" to fetch drives scheduled for future dates.
      * @return : A list of DTOs containing drive details.
      * @throws ResponseStatusException if the type is invalid.
@@ -178,14 +180,28 @@ public class DriveService {
         List<DriveSummary> drives;
 
         switch (type.toLowerCase()) {
-            case "upcoming" -> drives = driveRepo.findByUserIdAndDriveDatetimeAfter(userId, now);
-            case "completed" -> drives = driveRepo.findByUserIdAndDriveDatetimeBefore(userId, now);
+            case "nextup" -> {
+                LocalDateTime start = LocalDate.now().atStartOfDay();
+                LocalDateTime end = LocalDate.now().plusDays(2).atStartOfDay(); // includes today and tomorrow
+                drives = driveRepo.findByUserIdAndDriveDatetimeBetween(userId, start, end);
+            }
+            case "upcoming" -> {
+                LocalDateTime afterTomorrow = LocalDate.now().plusDays(2).atStartOfDay();
+                drives = driveRepo.findByUserIdAndDriveDatetimeAfter(userId, afterTomorrow);
+            }
+            case "completed" -> {
+                LocalDateTime startOfToday = LocalDate.now().atStartOfDay();
+                drives = driveRepo.findByUserIdAndDriveDatetimeBefore(userId, startOfToday);
+            }
             default -> {
                 log.warn("Invalid drive type '{}' requested by user {}", type, userId);
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Type must be 'upcoming' or 'past'");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Type must be 'nextup', 'upcoming' or 'completed'");
             }
         }
 
-        return drives.stream().map(this::toDto).toList();
+        return drives.stream()
+                .sorted(Comparator.comparing(DriveSummary::getDriveDatetime))
+                .map(this::toDto)
+                .toList();
     }
 }
