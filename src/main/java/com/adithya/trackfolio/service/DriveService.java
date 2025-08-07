@@ -2,6 +2,8 @@ package com.adithya.trackfolio.service;
 
 import com.adithya.trackfolio.dto.DriveRequestDTO;
 import com.adithya.trackfolio.dto.DriveResponseDTO;
+import com.adithya.trackfolio.dto.DriveWithNotesResponseDTO;
+import com.adithya.trackfolio.dto.NoteDTO;
 import com.adithya.trackfolio.entity.DriveSummary;
 import com.adithya.trackfolio.repository.DriveRepository;
 import com.adithya.trackfolio.repository.UserRepository;
@@ -124,7 +126,7 @@ public class DriveService {
      * @return DTO containing drive details
      * @throws ResponseStatusException if drive is not found or unauthorized
      */
-    public DriveResponseDTO getDriveById(Long id) {
+    public DriveWithNotesResponseDTO getDriveById(Long id) {
         Long userId = getUserIdFromContext();
 
         DriveSummary drive = driveRepo.findById(id)
@@ -138,7 +140,16 @@ public class DriveService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Unauthorized to view this drive");
         }
 
-        return toDto(drive);
+        List<NoteDTO> notes = noteService.getNotesByDriveId(id);
+
+        return DriveWithNotesResponseDTO.builder()
+                .id(drive.getId())
+                .companyName(drive.getCompanyName())
+                .role(drive.getRole())
+                .driveDatetime(drive.getDriveDatetime())
+                .isOnCampus(drive.isOnCampus())
+                .notes(notes)
+                .build();
     }
 
     // Converts DriveSummary entity to response DTO

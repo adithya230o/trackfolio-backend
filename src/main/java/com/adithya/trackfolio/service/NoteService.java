@@ -55,4 +55,21 @@ public class NoteService {
         noteRepo.saveAll(notes);
         log.info("Notes saved for drive {}", driveId);
     }
+
+    /**
+     * Retrieves all notes linked to the specified drive.
+     * Used to populate detailed drive views with associated note data.
+     *
+     * @param driveId ID of the drive whose notes are to be fetched
+     * @return List of note DTOs
+     */
+    public List<NoteDTO> getNotesByDriveId(Long driveId) {
+        List<Note> notes = noteRepo.findByDriveId(driveId);
+        return notes.stream().map(note -> NoteDTO.builder()
+                .content(note.getContent())
+                .pinned(note.isPinned())
+                .completed(note.isCompleted())
+                .build()
+        ).toList();
+    }
 }
