@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -18,4 +19,5 @@ public class DriveRequestDTO {
     private String role;
     private LocalDateTime driveDatetime;
     private Boolean isOnCampus;
+    private List<NoteDTO> notes;
 }

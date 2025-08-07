@@ -27,6 +27,7 @@ public class DriveService {
 
     private final DriveRepository driveRepo;
     private final UserRepository userRepo;
+    private final NoteService noteService;
 
     /**
      * Retrieves the authenticated user's ID from the JWT context.
@@ -73,7 +74,8 @@ public class DriveService {
             existing.setOnCampus(dto.getIsOnCampus());
 
             driveRepo.save(existing);
-            log.info("Drive saved successfully");
+            noteService.saveOrUpdateNotes(existing.getId(), dto.getNotes());
+            log.info("Drive updated with notes");
         } else {
             log.info("Creating a new drive...");
             DriveSummary newDrive = DriveSummary.builder()
@@ -84,8 +86,9 @@ public class DriveService {
                     .isOnCampus(dto.getIsOnCampus())
                     .build();
 
-            driveRepo.save(newDrive);
-            log.info("New Drive created successfully");
+            DriveSummary savedDrive = driveRepo.save(newDrive);
+            noteService.saveOrUpdateNotes(savedDrive.getId(), dto.getNotes());
+            log.info("New Drive created with notes");
         }
     }
 

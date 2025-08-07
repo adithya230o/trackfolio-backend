@@ -1,0 +1,17 @@
+package com.adithya.trackfolio.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class NoteDTO {
+    private Long id;
+    private String content;
+    private boolean pinned;
+    private boolean completed;
+}
