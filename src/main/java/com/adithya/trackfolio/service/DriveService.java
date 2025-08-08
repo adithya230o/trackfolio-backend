@@ -90,7 +90,7 @@ public class DriveService {
 
             DriveSummary savedDrive = driveRepo.save(newDrive);
             noteService.saveOrUpdateNotes(savedDrive.getId(), dto.getNotes());
-            log.info("New Drive created with notes");
+            log.info("New drive created with notes");
         }
     }
 
@@ -117,6 +117,7 @@ public class DriveService {
         }
 
         driveRepo.deleteById(driveId);
+        log.info("Drive deleted");
     }
 
     /**
@@ -141,6 +142,8 @@ public class DriveService {
         }
 
         List<NoteDTO> notes = noteService.getNotesByDriveId(id);
+
+        log.info("Returning the drive based on drive id");
 
         return DriveWithNotesResponseDTO.builder()
                 .id(drive.getId())
@@ -173,6 +176,8 @@ public class DriveService {
         Long userId = getUserIdFromContext();
         LocalDateTime start = date.atStartOfDay();
         LocalDateTime end = date.plusDays(1).atStartOfDay();
+
+        log.info("Returning the list of drives scheduled on {}", date);
 
         return driveRepo.findByUserIdAndDriveDatetimeBetween(userId, start, end).stream()
                 .map(this::toDto)
@@ -213,6 +218,8 @@ public class DriveService {
             }
         }
 
+        log.info("Returning the list of drives filtered on the type : {}", type);
+
         return drives.stream()
                 .sorted(Comparator.comparing(DriveSummary::getDriveDatetime))
                 .map(this::toDto)
@@ -229,6 +236,8 @@ public class DriveService {
         Long userId = getUserIdFromContext();
 
         List<DriveSummary> drives = driveRepo.findByUserIdAndCompanyName(userId, companyName);
+
+        log.info("Returning the list of drives filtered on the company name : {}", companyName);
 
         return drives.stream()
                 .sorted(Comparator.comparing(DriveSummary::getDriveDatetime))
