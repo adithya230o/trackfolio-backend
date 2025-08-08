@@ -49,4 +49,9 @@ public class DriveController {
     public List<DriveResponseDTO> getDrivesByType(@RequestParam("type") String value) {
         return service.getDrivesByType(value);
     }
+
+    @GetMapping("/find/{companyName}")
+    public List<DriveResponseDTO> getDrivesByName(@PathVariable String companyName) {
+        return service.getDrivesByName(companyName);
+    }
 }

@@ -13,4 +13,6 @@ public interface DriveRepository extends JpaRepository<DriveSummary, Long> {
     List<DriveSummary> findByUserIdAndDriveDatetimeAfter(Long userId, LocalDateTime now);
 
     List<DriveSummary> findByUserIdAndDriveDatetimeBefore(Long userId, LocalDateTime now);
+
+    List<DriveSummary> findByUserIdAndCompanyName(Long id, String companyName);
 }

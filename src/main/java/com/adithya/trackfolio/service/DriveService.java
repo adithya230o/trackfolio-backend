@@ -218,4 +218,21 @@ public class DriveService {
                 .map(this::toDto)
                 .toList();
     }
+
+    /**
+     * Fetches the drives by the name of the Company hiring.
+     *
+     * @param companyName : Name of the Company hiring, for which the drives have to be fetched
+     * @return : List DTOs containing drive details
+     */
+    public List<DriveResponseDTO> getDrivesByName(String companyName) {
+        Long userId = getUserIdFromContext();
+
+        List<DriveSummary> drives = driveRepo.findByUserIdAndCompanyName(userId, companyName);
+
+        return drives.stream()
+                .sorted(Comparator.comparing(DriveSummary::getDriveDatetime))
+                .map(this::toDto)
+                .toList();
+    }
 }
