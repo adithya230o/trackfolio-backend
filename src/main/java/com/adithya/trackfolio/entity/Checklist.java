@@ -11,8 +11,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "notes")
-public class Note {
+@Table(name = "checklist")
+public class Checklist {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

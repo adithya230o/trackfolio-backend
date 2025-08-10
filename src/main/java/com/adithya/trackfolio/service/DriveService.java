@@ -1,9 +1,6 @@
 package com.adithya.trackfolio.service;
 
-import com.adithya.trackfolio.dto.DriveRequestDTO;
-import com.adithya.trackfolio.dto.DriveResponseDTO;
-import com.adithya.trackfolio.dto.DriveWithNotesResponseDTO;
-import com.adithya.trackfolio.dto.NoteDTO;
+import com.adithya.trackfolio.dto.*;
 import com.adithya.trackfolio.entity.DriveSummary;
 import com.adithya.trackfolio.repository.DriveRepository;
 import com.adithya.trackfolio.repository.UserRepository;
@@ -30,6 +27,7 @@ public class DriveService {
     private final DriveRepository driveRepo;
     private final UserRepository userRepo;
     private final NoteService noteService;
+    private final ChecklistService checklistService;
 
     /**
      * Retrieves the authenticated user's ID from the JWT context.
@@ -78,6 +76,8 @@ public class DriveService {
             driveRepo.save(existing);
             noteService.saveOrUpdateNotes(existing.getId(), dto.getNotes());
             log.info("Drive updated with notes");
+            checklistService.saveOrUpdateChecklists(existing.getId(), dto.getChecklists());
+            log.info("Drive updated with checklists");
         } else {
             log.info("Creating a new drive...");
             DriveSummary newDrive = DriveSummary.builder()
@@ -90,7 +90,8 @@ public class DriveService {
 
             DriveSummary savedDrive = driveRepo.save(newDrive);
             noteService.saveOrUpdateNotes(savedDrive.getId(), dto.getNotes());
-            log.info("New drive created with notes");
+            checklistService.saveOrUpdateChecklists(savedDrive.getId(), dto.getChecklists());
+            log.info("New drive created with notes and checklists");
         }
     }
 
@@ -127,7 +128,7 @@ public class DriveService {
      * @return DTO containing drive details
      * @throws ResponseStatusException if drive is not found or unauthorized
      */
-    public DriveWithNotesResponseDTO getDriveById(Long id) {
+    public DriveDetailsResponseDTO getDriveDetailsById(Long id) {
         Long userId = getUserIdFromContext();
 
         DriveSummary drive = driveRepo.findById(id)
@@ -142,16 +143,18 @@ public class DriveService {
         }
 
         List<NoteDTO> notes = noteService.getNotesByDriveId(id);
+        List<ChecklistDTO> checklists = checklistService.getChecklistsByDriveId(id);
 
         log.info("Returning the drive based on drive id");
 
-        return DriveWithNotesResponseDTO.builder()
+        return DriveDetailsResponseDTO.builder()
                 .id(drive.getId())
                 .companyName(drive.getCompanyName())
                 .role(drive.getRole())
                 .driveDatetime(drive.getDriveDatetime())
                 .isOnCampus(drive.isOnCampus())
                 .notes(notes)
+                .checklists(checklists)
                 .build();
     }
 

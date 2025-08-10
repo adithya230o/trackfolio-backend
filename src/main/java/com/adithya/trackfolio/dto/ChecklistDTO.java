@@ -7,7 +7,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class NoteDTO {
+public class ChecklistDTO {
     private Long id;
     private String content;
     private boolean completed;

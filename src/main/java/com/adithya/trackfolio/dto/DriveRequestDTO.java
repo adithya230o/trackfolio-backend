@@ -20,4 +20,5 @@ public class DriveRequestDTO {
     private LocalDateTime driveDatetime;
     private Boolean isOnCampus;
     private List<NoteDTO> notes;
+    private List<ChecklistDTO> checklists;
 }

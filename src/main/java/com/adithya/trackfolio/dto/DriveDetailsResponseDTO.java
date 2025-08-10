@@ -12,14 +12,15 @@ import java.util.List;
         "role",
         "driveDatetime",
         "onCampus",
-        "notes"
+        "notes",
+        "checklists"
 })
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class DriveWithNotesResponseDTO {
+public class DriveDetailsResponseDTO {
     private Long id;
     private String companyName;
     private String role;
@@ -27,4 +28,5 @@ public class DriveWithNotesResponseDTO {
     private boolean isOnCampus;
 
     private List<NoteDTO> notes;
+    private List<ChecklistDTO> checklists;
 }

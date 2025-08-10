@@ -1,8 +1,8 @@
 package com.adithya.trackfolio.controller;
 
+import com.adithya.trackfolio.dto.DriveDetailsResponseDTO;
 import com.adithya.trackfolio.dto.DriveRequestDTO;
 import com.adithya.trackfolio.dto.DriveResponseDTO;
-import com.adithya.trackfolio.dto.DriveWithNotesResponseDTO;
 import com.adithya.trackfolio.service.DriveService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,8 +36,8 @@ public class DriveController {
     }
 
     @GetMapping("/fetch/{id}")
-    public DriveWithNotesResponseDTO getDrive(@PathVariable Long id) {
-        return service.getDriveById(id);
+    public DriveDetailsResponseDTO getDrive(@PathVariable Long id) {
+        return service.getDriveDetailsById(id);
     }
 
     @GetMapping("/date")

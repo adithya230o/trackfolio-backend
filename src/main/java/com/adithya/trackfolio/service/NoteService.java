@@ -5,6 +5,7 @@ import com.adithya.trackfolio.entity.DriveSummary;
 import com.adithya.trackfolio.entity.Note;
 import com.adithya.trackfolio.repository.DriveRepository;
 import com.adithya.trackfolio.repository.NoteRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -42,10 +43,13 @@ public class NoteService {
         List<Note> notes = noteDTOs.stream().map(dto -> {
             Note note = new Note();
             note.setContent(dto.getContent());
-            note.setPinned(dto.isPinned());
             note.setCompleted(dto.isCompleted());
 
             // Maps notes table to driveSummary
+            if (!driveRepo.existsById(driveId)) {
+                log.warn("Drive with id {} not found", driveId);
+                throw new EntityNotFoundException("Drive with id " + driveId + " not found");
+            }
             DriveSummary drive = driveRepo.getReferenceById(driveId);
             note.setDrive(drive);
 
@@ -67,7 +71,6 @@ public class NoteService {
         List<Note> notes = noteRepo.findByDriveId(driveId);
         return notes.stream().map(note -> NoteDTO.builder()
                 .content(note.getContent())
-                .pinned(note.isPinned())
                 .completed(note.isCompleted())
                 .build()
         ).toList();
