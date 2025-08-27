@@ -2,6 +2,7 @@ package com.adithya.trackfolio.controller;
 
 import com.adithya.trackfolio.dto.*;
 import com.adithya.trackfolio.entity.JD;
+import com.adithya.trackfolio.service.AuthService;
 import com.adithya.trackfolio.service.DriveService;
 import com.adithya.trackfolio.service.JDService;
 import lombok.RequiredArgsConstructor;
@@ -25,38 +26,40 @@ import java.util.Optional;
 @RequestMapping("/drives")
 public class DriveController {
 
-    private final DriveService service;
+    private final DriveService driveService;
     private final JDService jdService;
+    private final AuthService authService;
 
     @PostMapping("/save")
-    public void saveDrive(@RequestBody DriveRequestDTO dto) {
-        service.saveDrive(dto);
+    public ResponseEntity<Void> saveDrive(@RequestBody DriveRequestDTO dto) {
+        driveService.saveDrive(dto);
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("delete/{id}")
     public ResponseEntity<String> deleteDrive(@PathVariable Long id) {
-        service.deleteDriveById(id);
+        driveService.deleteDriveById(id);
         return ResponseEntity.ok("Drive deleted successfully");
     }
 
     @GetMapping("/fetch/{id}")
     public DriveDetailsResponseDTO getDrive(@PathVariable Long id) {
-        return service.getDriveDetailsById(id);
+        return driveService.getDriveDetailsById(id);
     }
 
     @GetMapping("/date")
     public List<DriveResponseDTO> getDrivesByDate(@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        return service.getDrivesForDate(date);
+        return driveService.getDrivesForDate(date);
     }
 
     @GetMapping("/type")
     public List<DriveResponseDTO> getDrivesByType(@RequestParam("type") String value) {
-        return service.getDrivesByType(value);
+        return driveService.getDrivesByType(value);
     }
 
     @GetMapping("/find/{companyName}")
     public List<DriveResponseDTO> getDrivesByName(@PathVariable String companyName) {
-        return service.getDrivesByName(companyName);
+        return driveService.getDrivesByName(companyName);
     }
 
     /**
@@ -122,5 +125,16 @@ public class DriveController {
             return ResponseEntity.status(500)
                     .body(new JDTextResponseDto(null));
         }
+    }
+
+    /**
+     * Endpoint to delete a user account
+     *
+     * @return Response entity on a successful operation
+     */
+    @DeleteMapping("/delete-account")
+    public ResponseEntity<Void> deleteAccount() {
+        authService.deleteAccount();
+        return ResponseEntity.ok().build();
     }
 }

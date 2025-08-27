@@ -3,16 +3,20 @@ package com.adithya.trackfolio.service;
 import com.adithya.trackfolio.dto.AuthRequest;
 import com.adithya.trackfolio.dto.AuthResponse;
 import com.adithya.trackfolio.dto.RegisterRequest;
+import com.adithya.trackfolio.entity.DriveSummary;
 import com.adithya.trackfolio.entity.User;
-import com.adithya.trackfolio.repository.UserRepository;
+import com.adithya.trackfolio.repository.*;
 import com.adithya.trackfolio.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
@@ -27,6 +31,12 @@ public class AuthService {
     private final UserRepository repo;
     private final PasswordEncoder encoder;
     private final JwtUtil jwtUtil;
+    private final UserRepository userRepository;
+    private final DriveRepository driveRepository;
+    private final NoteRepository noteRepository;
+    private final ChecklistRepository checklistRepository;
+    private final JDRepository jdRepository;
+    private final SkillRepository skillRepository;
 
     private final Pattern gmailPattern = Pattern.compile("^[a-zA-Z0-9._%+-]+@gmail\\.com$");
 
@@ -69,7 +79,9 @@ public class AuthService {
 
         repo.save(user);
         log.info("Details of {} saved to db. Tokens returned.", user.getEmail());
-        return new AuthResponse(accessToken, refreshToken);
+
+        String userName = user.getName();
+        return new AuthResponse(accessToken, refreshToken, userName);
     }
 
     /**
@@ -103,7 +115,8 @@ public class AuthService {
         repo.save(user);
         log.info("User email : {} logged in. Tokens returned.", user.getEmail());
 
-        return new AuthResponse(accessToken, refreshToken);
+        String userName = user.getName();
+        return new AuthResponse(accessToken, refreshToken, userName);
     }
 
     /**
@@ -135,6 +148,49 @@ public class AuthService {
         String newAccessToken = jwtUtil.generateToken(user.getEmail(), false);
         log.info("New accessToken generated and returned");
 
-        return new AuthResponse(newAccessToken, refreshToken);
+        String userName = user.getName();
+        return new AuthResponse(newAccessToken, refreshToken, userName);
+    }
+
+    private Long getUserIdFromContext() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        return repo.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"))
+                .getId();
+    }
+
+    /**
+     * Deletes the current user's account along with all associated data,
+     * including drives, job descriptions, notes, checklists, and skills.
+     * This operation is transactional; all deletions succeed or none are applied.
+     */
+    @Transactional
+    public void deleteAccount() {
+        Long userId = getUserIdFromContext();
+
+        // 1. Delete skills
+        skillRepository.deleteByUserId(userId);
+
+        // 2. Get all drives
+        List<DriveSummary> drives = driveRepository.findByUserId(userId);
+
+        for (DriveSummary drive : drives) {
+            Long driveId = drive.getId();
+
+            // 2a. Delete JD if exists
+            jdRepository.findByDriveId(driveId).ifPresent(jd -> jdRepository.delete(jd));
+
+            // 2b. Delete notes
+            noteRepository.deleteByDriveId(driveId);
+
+            // 2c. Delete checklist items
+            checklistRepository.deleteByDriveId(driveId);
+        }
+
+        // 3. Delete drives
+        driveRepository.deleteByUserId(userId);
+
+        // 4. Delete user
+        userRepository.deleteById(userId);
     }
 }
