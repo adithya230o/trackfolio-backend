@@ -9,9 +9,9 @@ spring:
 
   # Database
   datasource:
-    url: jdbc:postgresql://localhost:5432/trackfolio
-    username: postgres
-    password: adi
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASS}
     driver-class-name: org.postgresql.Driver
 
   # Hibernate
@@ -27,4 +27,4 @@ spring:
 
 # JWT Secret
 jwt:
-  secret: eBw7TnIBDN+iD99ulb+eUAATpQU9YyV5I1imRo0vCnk=
+  secret: ${JWT_SECRET}
