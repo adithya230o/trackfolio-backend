@@ -2,13 +2,13 @@ package com.adithya.trackfolio.service;
 
 import com.adithya.trackfolio.dto.*;
 import com.adithya.trackfolio.entity.DriveSummary;
-import com.adithya.trackfolio.repository.DriveRepository;
-import com.adithya.trackfolio.repository.UserRepository;
+import com.adithya.trackfolio.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
@@ -28,6 +28,9 @@ public class DriveService {
     private final UserRepository userRepo;
     private final NoteService noteService;
     private final ChecklistService checklistService;
+    private final NoteRepository noteRepository;
+    private final ChecklistRepository checklistRepository;
+    private final JDRepository jdRepository;
 
     /**
      * Retrieves the authenticated user's ID from the JWT context.
@@ -101,13 +104,14 @@ public class DriveService {
      * @param driveId ID of the drive to delete
      * @throws ResponseStatusException if drive is not found or unauthorized
      */
+    @Transactional
     public void deleteDriveById(Long driveId) {
         Long userId = getUserIdFromContext();  // Extracted from email in SecurityContext
 
         // check if drive exists
         DriveSummary drive = driveRepo.findById(driveId)
                 .orElseThrow(() -> {
-                    log.warn("Drive not found for (Delete drive)");
+                    log.warn("Drive not found for (Delete drive) : ", driveId);
                     return new ResponseStatusException(HttpStatus.NOT_FOUND, "Drive not found");
                 });
 
@@ -117,6 +121,16 @@ public class DriveService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Unauthorized to delete this drive");
         }
 
+        // Delete JD
+        jdRepository.findByDriveId(driveId).ifPresent(jd -> jdRepository.delete(jd));
+
+        // Delete notes
+        noteRepository.deleteByDriveId(driveId);
+
+        // Delete checklist items
+        checklistRepository.deleteByDriveId(driveId);
+
+        // Delete drive summary
         driveRepo.deleteById(driveId);
         log.info("Drive deleted");
     }

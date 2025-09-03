@@ -21,4 +21,7 @@ public interface DriveRepository extends JpaRepository<DriveSummary, Long> {
 
     @Transactional
     void deleteByUserId(Long userId);
+
+    @Transactional
+    void deleteById(Long driveId);
 }
