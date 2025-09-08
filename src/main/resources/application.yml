@@ -28,3 +28,6 @@ spring:
 # JWT Secret
 jwt:
   secret: ${JWT_SECRET}
+
+aicore:
+  url: ${aicore_url}

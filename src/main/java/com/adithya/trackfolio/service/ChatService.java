@@ -7,6 +7,7 @@ import com.adithya.trackfolio.repository.JDRepository;
 import com.adithya.trackfolio.repository.SkillRepository;
 import com.adithya.trackfolio.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,6 +22,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ChatService {
 
+    @Value("${aicore.url}")
+    private String mainUrl;
     private final JDRepository jdRepository;
     private final SkillRepository skillRepository;
     private final UserRepository userRepository;
@@ -55,7 +58,7 @@ public class ChatService {
         String aiRequestJson = String.format("{\"prompt\":\"%s\"}", escapeJson(prompt));
 
         // 7. Send to AI-core microservice using WebClient
-        String aiCoreUrl = "http://localhost:8081/api/prompt/userPrompt";
+        String aiCoreUrl = mainUrl + "/api/prompt/userPrompt";
 
         return webClient.post()
                 .uri(aiCoreUrl)
@@ -94,5 +97,19 @@ public class ChatService {
     private String escapeJson(String text) {
         return text.replace("\"", "\\\"")
                 .replace("\n", "\\n");
+    }
+
+    public String prewarm() {
+        String aiCoreUrl = mainUrl + "/pre/warm";
+        
+        try {
+            return webClient.post()
+                    .uri(aiCoreUrl)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
+        } catch (Exception e) {
+            return "Prewarm error";
+        }
     }
 }
