@@ -13,6 +13,15 @@ spring:
     username: ${DB_USER}
     password: ${DB_PASS}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      # Wait up to 30 seconds for a connection before failing
+      connection-timeout: 50000
+      # Don't fail immediately if DB is unavailable
+      initialization-fail-timeout: -1
+      maximum-pool-size: 10
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
 
   # Hibernate
   jpa:
@@ -29,5 +38,17 @@ spring:
 jwt:
   secret: ${JWT_SECRET}
 
+# Custom microservice for chatbot requests
 aicore:
   url: ${aicore_url}
+
+# Health check
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      probes:
+        enabled: true

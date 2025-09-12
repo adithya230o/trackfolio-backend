@@ -81,9 +81,15 @@ public class AuthService {
         repo.save(user);
         log.info("Details of {} saved to db. Tokens returned.", user.getEmail());
 
-        //prewarm call to the ai-core-microservice
-        String prewarmResponse = chatService.prewarm();
-        log.info(prewarmResponse);
+        // prewarm call executed asynchronously
+        new Thread(() -> {
+            try {
+                String prewarmResponse = chatService.prewarm();
+                log.info("Prewarm completed: {}", prewarmResponse);
+            } catch (Exception e) {
+                log.error("Prewarm failed", e);
+            }
+        }).start();
 
         String userName = user.getName();
         return new AuthResponse(accessToken, refreshToken, userName);
@@ -120,9 +126,15 @@ public class AuthService {
         repo.save(user);
         log.info("User email : {} logged in. Tokens returned.", user.getEmail());
 
-        //prewarm call to the ai-core-microservice
-        String prewarmResponse = chatService.prewarm();
-        log.info(prewarmResponse);
+        // prewarm call executed asynchronously
+        new Thread(() -> {
+            try {
+                String prewarmResponse = chatService.prewarm();
+                log.info("Prewarm completed: {}", prewarmResponse);
+            } catch (Exception e) {
+                log.error("Prewarm failed", e);
+            }
+        }).start();
 
         String userName = user.getName();
         return new AuthResponse(accessToken, refreshToken, userName);
@@ -157,9 +169,15 @@ public class AuthService {
         String newAccessToken = jwtUtil.generateToken(user.getEmail(), false);
         log.info("New accessToken generated and returned");
 
-        //prewarm call to the ai-core-microservice
-        String prewarmResponse = chatService.prewarm();
-        log.info(prewarmResponse);
+        // prewarm call executed asynchronously
+        new Thread(() -> {
+            try {
+                String prewarmResponse = chatService.prewarm();
+                log.info("Prewarm completed: {}", prewarmResponse);
+            } catch (Exception e) {
+                log.error("Prewarm failed", e);
+            }
+        }).start();
 
         String userName = user.getName();
         return new AuthResponse(newAccessToken, refreshToken, userName);
