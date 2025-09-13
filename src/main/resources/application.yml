@@ -13,6 +13,8 @@ spring:
     username: ${DB_USER}
     password: ${DB_PASS}
     driver-class-name: org.postgresql.Driver
+
+
     hikari:
       # Wait up to 30 seconds for a connection before failing
       connection-timeout: 50000
@@ -41,6 +43,10 @@ jwt:
 # Custom microservice for chatbot requests
 aicore:
   url: ${aicore_url}
+
+# allowed url for CORS
+app:
+  frontend-url: ${FRONTEND_URL}
 
 # Health check
 management:

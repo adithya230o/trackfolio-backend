@@ -2,6 +2,7 @@ package com.adithya.trackfolio.config;
 
 import com.adithya.trackfolio.security.JwtFilter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -38,6 +39,8 @@ public class SecurityConfig {
     }
 
     private final JwtFilter jwtFilter;
+    @Value("${app.frontend-url}")
+    private String frontendUrl;
 
     /**
      * Defines the security filter chain.
@@ -73,7 +76,12 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOriginPatterns(List.of("http://localhost:*", "https://localhost:*"));
+
+        config.setAllowedOrigins(List.of(
+                frontendUrl,
+                "http://localhost:3000"
+        ));
+
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
